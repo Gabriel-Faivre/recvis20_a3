@@ -4,8 +4,10 @@ import os
 import PIL.Image as Image
 
 import torch
+import torchvision
+import torchvision.models as models
+from model import Classifier
 
-from model import Net
 
 parser = argparse.ArgumentParser(description='RecVis A3 evaluation script')
 parser.add_argument('--data', type=str, default='bird_dataset', metavar='D',
@@ -14,12 +16,34 @@ parser.add_argument('--model', type=str, metavar='M',
                     help="the model file to be evaluated. Usually it is of the form model_X.pth")
 parser.add_argument('--outfile', type=str, default='experiment/kaggle.csv', metavar='D',
                     help="name of the output csv file")
+parser.add_argument('--encoder', type=str, default='vgg16', choices=['vgg16', 'resnet18', 'resnet50', 'inception_v3'],
+                    help='encoder (default: vgg16)')
 
 args = parser.parse_args()
 use_cuda = torch.cuda.is_available()
 
 state_dict = torch.load(args.model)
-model = Net()
+
+if args.encoder == 'vgg16':
+    model = models.vgg16(pretrained=True)
+    in_features = model.classifier[0].in_features
+elif args.encoder == 'resnet18':
+    model = models.resnet18(pretrained=True)
+    in_features = model.fc.in_features
+elif args.encoder == 'resnet50':
+    model = models.resnet50(pretrained=True)
+    in_features = model.fc.in_features
+elif args.encoder == 'inception_v3':
+    model = models.inception_v3(pretrained=True)
+    in_features = model.fc.in_features
+
+classifier = Classifier(in_features)
+
+if args.encoder == 'vgg16':
+    model.classifier = classifier
+else:
+    model.fc = classifier
+
 model.load_state_dict(state_dict)
 model.eval()
 if use_cuda:
