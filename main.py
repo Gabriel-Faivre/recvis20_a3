@@ -13,7 +13,7 @@ from tqdm import tqdm
 
 from torch.utils.tensorboard import SummaryWriter
 
-from data import data_transforms
+from data import train_data_transforms, val_data_transforms
 from model import Classifier
 
 
@@ -161,7 +161,7 @@ if __name__ == '__main__':
         'encoder' : args.encoder,
         'classifier': [25088, 320, 50, 20],
         'optimizer': args.optimizer,
-        'dropout': 0.5,
+        'dropout': 0.3,
         'activations': 'ReLU',
         'epochs': args.epochs,
         'finetune': args.finetune
@@ -255,11 +255,11 @@ if __name__ == '__main__':
     # Data initialization and loading
     train_loader = torch.utils.data.DataLoader(
         datasets.ImageFolder(args.data + '/train_images',
-                            transform=data_transforms),
+                            transform=train_data_transforms),
         batch_size=args.batch_size, shuffle=True, num_workers=1)
     val_loader = torch.utils.data.DataLoader(
         datasets.ImageFolder(args.data + '/val_images',
-                            transform=data_transforms),
+                            transform=val_data_transforms),
         batch_size=args.batch_size, shuffle=False, num_workers=1)
 
     # Set up of the tensorboard visualization

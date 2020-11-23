@@ -12,7 +12,7 @@ class Classifier(nn.Module):
         self.fc1 = nn.Linear(in_features, 320)
         self.fc2 = nn.Linear(320, 50)
         self.fc3 = nn.Linear(50, nclasses)
-        self.dropout = nn.Dropout(0.5)
+        self.dropout = nn.Dropout(0.3)
 
     def forward(self, x):
         x = x.view(-1, self.in_features)
