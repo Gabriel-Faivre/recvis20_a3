@@ -1,26 +1,12 @@
 import zipfile
 import os
-
-import torchvision.transforms as transforms
-
-# once the images are loaded, how do we pre-process them before being passed into the network
-# by default, we resize the images to 64 x 64 in size
-# and normalize them to mean = 0 and standard-deviation = 1 based on statistics collected from
-# the training set
-data_transforms = transforms.Compose([
-    transforms.Resize((224, 224)),
-    transforms.ToTensor(),
-    transforms.Normalize(mean=[0.485, 0.456, 0.406],
-                                 std=[0.229, 0.224, 0.225])
-])
-
-
-import zipfile
-import os
 import PIL
 import numpy as np
 import imgaug as ia
 import imgaug.augmenters as iaa
+import detecto
+from detecto.core import Model
+
 
 import torchvision.transforms as transforms
 
@@ -28,7 +14,17 @@ import torchvision.transforms as transforms
 # by default, we resize the images to 64 x 64 in size
 # and normalize them to mean = 0 and standard-deviation = 1 based on statistics collected from
 # the training set
+class objectDetectionTransform:
+  def __init__(self):
+    self.model = Model()
 
+  def __call__(self, img):
+    labels, boxes, scores = self.model.predict(img)  # Get all predictions on an image
+    for i,x in enumerate(labels):
+      if x == 'bird':
+        crop_rectangle = boxes[i].tolist()
+        return img.crop(crop_rectangle)
+    return img
 
 class ImgAugTransform:
   def __init__(self):
@@ -68,7 +64,8 @@ class ImgAugTransform:
     return self.aug.augment_image(img)
     
 train_data_transforms = transforms.Compose([
-    transforms.Resize((224, 224)),
+    objectDetectionTransform(),
+    transforms.Resize((124, 124)),
     ImgAugTransform(),
     transforms.ToTensor(),
     transforms.Normalize(mean=[0.485, 0.456, 0.406],
@@ -76,7 +73,8 @@ train_data_transforms = transforms.Compose([
 ])
 
 val_data_transforms = transforms.Compose([
-    transforms.Resize((224, 224)),
+    objectDetectionTransform(),
+    transforms.Resize((124, 124)),
     transforms.ToTensor(),
     transforms.Normalize(mean=[0.485, 0.456, 0.406],
                                  std=[0.229, 0.224, 0.225])
